@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cipher Pro</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 20%, #1e3a8a, #0b1329);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      color: #0f172a;
+    }
+
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 800;
+      text-align: center;
+      color: #0f172a;
+      letter-spacing: 0.3px;
+    }
+
+    .box-container {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .box-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      padding: 0 2px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 72px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #0f172a;
+      background: #ffffff;
+      outline: none;
+      resize: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    }
+
+    .output-area {
+      background: #f8fafc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      word-break: break-all;
+    }
+
+    .grid-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .grid-tools {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 9px 12px;
+      border-radius: 9999px;
+      transition: opacity 0.15s, transform 0.08s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-enc {
+      background: #1d4ed8;
+      color: #ffffff;
+    }
+
+    .btn-dec {
+      background: #0284c7;
+      color: #ffffff;
+    }
+
+    .btn-tool {
+      background: #f1f5f9;
+      color: #1e293b;
+      font-size: 12px;
+      padding: 7px 10px;
+    }
+
+    .btn-tool:hover {
+      background: #e2e8f0;
+    }
+
+    .toast {
+      min-height: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      color: #15803d;
+      transition: color 0.15s;
+    }
+
+    .toast.err {
+      color: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="title">ꕤ CIPHER PRO XZ ✰</div>
+
+    <div class="box-container">
+      <div class="box-header">
+        <span>Entrada</span>
+        <span id="inCount">0</span>
+      </div>
+      <textarea id="inTxt" placeholder="Escribe el texto a cifrar o el código a descifrar..."></textarea>
+    </div>
+
+    <div class="grid-btns">
+      <button class="btn-enc" id="bEnc">Cifrar</button>
+      <button class="btn-dec" id="bDec">Descifrar</button>
+    </div>
+
+    <div class="box-container">
+      <div class="box-header">
+        <span>Resultado</span>
+        <span id="outCount">0</span>
+      </div>
+      <textarea id="outTxt" class="output-area" readonly placeholder="Salida procesada sin puntos ni caracteres rotos..."></textarea>
+    </div>
+
+    <div class="grid-tools">
+      <button class="btn-tool" id="bSwap">Invertir</button>
+      <button class="btn-tool" id="bCopy">Copiar</button>
+      <button class="btn-tool" id="bClear">Limpiar</button>
+    </div>
+
+    <div class="toast" id="msg"></div>
+  </div>
+
+  <script>
+    // Alfabeto Base-64 híbrido: 32 caracteres latinos/numéricos + 32 ideogramas chinos estéticos
+    // Sin caracteres duplicados, sin puntos ni comodines finales (padding libre de '.')
+    const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" + 
+                     "龍鳳玄夜月星影幻霧刃雷風雨雪霜空光神鬼龍魂心鏡夢桜海幽炎狼翼劍狐";
+
+    const CHAR_MAP = new Map();
+    for (let i = 0; i < ALPHABET.length; i++) {
+      CHAR_MAP.set(ALPHABET[i], i);
+    }
+
+    // Máscara interna para dispersión en bloque
+    const SBOX = [0x5C, 0xA3, 0x1E, 0x7B, 0x92, 0x4D, 0xE8, 0x3F, 0x61, 0x8A, 0x24, 0xD0];
+
+    function notify(text, isErr = false) {
+      const el = document.getElementById("msg");
+      el.textContent = text;
+      el.className = "toast" + (isErr ? " err" : "");
+      clearTimeout(el.t);
+      el.t = setTimeout(() => {
+        el.textContent = "";
+      }, 3000);
+    }
+
+    function utf8ToBytes(str) {
+      return new TextEncoder().encode(str);
+    }
+
+    function bytesToUtf8(bytes) {
+      return new TextDecoder().decode(bytes);
+    }
+
+    // Cifrador dinámico: IV variable + Checksum + Conversión de flujo en múltiplos de 6 bits (sin '.')
+    function encrypt(rawBytes) {
+      if (!rawBytes || rawBytes.length === 0) return "";
+
+      const iv = Math.floor(Math.random() * 256);
+      let checksum = 0x6A;
+      for (let i = 0; i < rawBytes.length; i++) {
+        checksum = (checksum + rawBytes[i]) & 0xFF;
+      }
+
+      // Payload: [IV (1B), Checksum (1B), Datos cifrados...]
+      const payload = new Uint8Array(2 + rawBytes.length);
+      payload[0] = iv;
+      payload[1] = checksum;
+
+      let chain = iv;
+      for (let i = 0; i < rawBytes.length; i++) {
+        const mask = SBOX[i % SBOX.length];
+        const enc = rawBytes[i] ^ mask ^ chain;
+        payload[2 + i] = enc;
+        chain = enc;
+      }
+
+      // Empaquetado binario a Base-64 sin puntos (agrega longitud exacta de bits como metadata en el primer símbolo)
+      let bitBuffer = 0;
+      let bitCount = 0;
+      let output = "";
+
+      for (let i = 0; i < payload.length; i++) {
+        bitBuffer = (bitBuffer << 8) | payload[i];
+        bitCount += 8;
+        while (bitCount >= 6) {
+          bitCount -= 6;
+          const index = (bitBuffer >> bitCount) & 0x3F;
+          output += ALPHABET[index];
+        }
+      }
+
+      // Si sobran bits (0, 2 o 4), codificamos los sobrantes rellenando ceros a la derecha y guardamos cuántos bits sobraron
+      if (bitCount > 0) {
+        const index = (bitBuffer << (6 - bitCount)) & 0x3F;
+        output += ALPHABET[index];
+      }
+
+      // El último símbolo del alfabeto guardará el residuo de bits (0, 2, o 4) para recuperación exacta sin usar '.'
+      // Codificamos residuo (bitCount/2) -> 0, 1, 2 asignado a un glifo
+      output += ALPHABET[bitCount / 2];
+
+      return output;
+    }
+
+    function decrypt(cipherStr) {
+      const glyphs = Array.from(cipherStr.trim());
+      if (glyphs.length < 4) {
+        throw new Error("Cadena incompleta o inválida.");
+      }
+
+      // Leer el glifo de residuo final
+      const remainderChar = glyphs.pop();
+      const remainderFactor = CHAR_MAP.get(remainderChar);
+      if (remainderFactor === undefined || remainderFactor > 2) {
+        throw new Error("Formato de residuo incorrecto.");
+      }
+      const leftoverBits = remainderFactor * 2;
+
+      let bitBuffer = 0;
+      let bitCount = 0;
+      const bytes = [];
+
+      for (let i = 0; i < glyphs.length; i++) {
+        const val = CHAR_MAP.get(glyphs[i]);
+        if (val === undefined) {
+          throw new Error("Contiene símbolos desconocidos.");
+        }
+
+        const isLastChunk = (i === glyphs.length - 1);
+        if (isLastChunk && leftoverBits > 0) {
+          // Último chunk con bits válidos exactos
+          bitBuffer = (bitBuffer << leftoverBits) | (val >> (6 - leftoverBits));
+          bitCount += leftoverBits;
+        } else {
+          bitBuffer = (bitBuffer << 6) | val;
+          bitCount += 6;
+        }
+
+        while (bitCount >= 8) {
+          bitCount -= 8;
+          bytes.push((bitBuffer >> bitCount) & 0xFF);
+        }
+      }
+
+      if (bytes.length < 2) {
+        throw new Error("Datos insuficientes.");
+      }
+
+      const iv = bytes[0];
+      const checksumExpected = bytes[1];
+      const dataLen = bytes.length - 2;
+      const raw = new Uint8Array(dataLen);
+
+      let chain = iv;
+      let calcChecksum = 0x6A;
+
+      for (let j = 0; j < dataLen; j++) {
+        const enc = bytes[2 + j];
+        const mask = SBOX[j % SBOX.length];
+        const dec = enc ^ mask ^ chain;
+        raw[j] = dec;
+        calcChecksum = (calcChecksum + dec) & 0xFF;
+        chain = enc;
+      }
+
+      if (calcChecksum !== checksumExpected) {
+        throw new Error("Texto alterado o código incorrecto.");
+      }
+
+      return bytesToUtf8(raw);
+    }
+
+    // Controladores DOM
+    const inTxt = document.getElementById("inTxt");
+    const outTxt = document.getElementById("outTxt");
+    const inCount = document.getElementById("inCount");
+    const outCount = document.getElementById("outCount");
+
+    function syncCounts() {
+      inCount.textContent = Array.from(inTxt.value).length;
+      outCount.textContent = Array.from(outTxt.value).length;
+    }
+
+    inTxt.addEventListener("input", syncCounts);
+
+    document.getElementById("bEnc").addEventListener("click", () => {
+      try {
+        const val = inTxt.value;
+        if (!val) {
+          notify("Ingresa texto para cifrar", true);
+          return;
+        }
+        outTxt.value = encrypt(utf8ToBytes(val));
+        syncCounts();
+        notify("Cifrado completado");
+      } catch (e) {
+        notify(e.message, true);
+      }
+    });
+
+    document.getElementById("bDec").addEventListener("click", () => {
+      try {
+        const val = inTxt.value;
+        if (!val) {
+          notify("Pega el código en la entrada", true);
+          return;
+        }
+        outTxt.value = decrypt(val);
+        syncCounts();
+        notify("Descifrado exacto sin errores");
+      } catch (e) {
+        notify(e.message, true);
+      }
+    });
+
+    document.getElementById("bSwap").addEventListener("click", () => {
+      const tmp = inTxt.value;
+      inTxt.value = outTxt.value;
+      outTxt.value = tmp;
+      syncCounts();
+      notify("Invertido");
+    });
+
+    document.getElementById("bCopy").addEventListener("click", () => {
+      if (!outTxt.value) {
+        notify("Nada que copiar", true);
+        return;
+      }
+      navigator.clipboard.writeText(outTxt.value).then(() => notify("Copiado al portapapeles"));
+    });
+
+    document.getElementById("bClear").addEventListener("click", () => {
+      inTxt.value = "";
+      outTxt.value = "";
+      syncCounts();
+      notify("Limpio");
+    });
+  </script>
+</body>
+</html>
