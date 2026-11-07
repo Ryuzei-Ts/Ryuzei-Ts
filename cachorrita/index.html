@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cipher Pro</title>
+  <title>Hola perrita</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      background: radial-gradient(circle at 50% 20%, #1e3a8a, #0b1329);
+      background-color: #000000;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -25,27 +25,28 @@
     .card {
       background: #ffffff;
       width: 100%;
-      max-width: 480px;
+      max-width: 440px;
       border-radius: 20px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
-      padding: 16px;
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.05);
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       text-align: center;
-      color: #0f172a;
-      letter-spacing: 0.3px;
+      color: #000000;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     .box-container {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
 
     .box-header {
@@ -54,33 +55,31 @@
       font-size: 11px;
       font-weight: 700;
       color: #475569;
-      text-transform: uppercase;
       padding: 0 2px;
     }
 
     textarea {
       width: 100%;
-      height: 72px;
+      height: 64px;
       border: 1.5px solid #cbd5e1;
       border-radius: 12px;
       padding: 8px 10px;
       font-size: 13px;
-      line-height: 1.4;
-      color: #0f172a;
+      line-height: 1.35;
+      color: #000000;
       background: #ffffff;
       outline: none;
       resize: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color 0.15s;
     }
 
     textarea:focus {
       border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
     }
 
     .output-area {
       background: #f8fafc;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: ui-monospace, Menlo, Monaco, Consolas, monospace;
       word-break: break-all;
     }
 
@@ -92,7 +91,7 @@
 
     .grid-tools {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 6px;
     }
 
@@ -102,13 +101,13 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 700;
-      padding: 9px 12px;
+      padding: 8px 10px;
       border-radius: 9999px;
-      transition: opacity 0.15s, transform 0.08s;
+      user-select: none;
+      transition: transform 0.08s, opacity 0.15s;
       display: flex;
       align-items: center;
       justify-content: center;
-      user-select: none;
     }
 
     button:active {
@@ -127,9 +126,9 @@
 
     .btn-tool {
       background: #f1f5f9;
-      color: #1e293b;
-      font-size: 12px;
-      padding: 7px 10px;
+      color: #0f172a;
+      font-size: 11px;
+      padding: 6px 8px;
     }
 
     .btn-tool:hover {
@@ -137,30 +136,29 @@
     }
 
     .toast {
-      min-height: 16px;
+      min-height: 14px;
       font-size: 11px;
       font-weight: 600;
       text-align: center;
-      color: #15803d;
-      transition: color 0.15s;
+      color: #16a34a;
     }
 
     .toast.err {
-      color: #b91c1c;
+      color: #dc2626;
     }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <div class="title">ꕤ CIPHER PRO XZ ✰</div>
+    <div class="title">ꕤ Hola perrita ✰</div>
 
     <div class="box-container">
       <div class="box-header">
         <span>Entrada</span>
         <span id="inCount">0</span>
       </div>
-      <textarea id="inTxt" placeholder="Escribe el texto a cifrar o el código a descifrar..."></textarea>
+      <textarea id="inTxt" placeholder="Escribe o pega aquí..."></textarea>
     </div>
 
     <div class="grid-btns">
@@ -173,7 +171,7 @@
         <span>Resultado</span>
         <span id="outCount">0</span>
       </div>
-      <textarea id="outTxt" class="output-area" readonly placeholder="Salida procesada sin puntos ni caracteres rotos..."></textarea>
+      <textarea id="outTxt" class="output-area" readonly placeholder="Salida limpia garantizada..."></textarea>
     </div>
 
     <div class="grid-tools">
@@ -186,157 +184,87 @@
   </div>
 
   <script>
-    // Alfabeto Base-64 híbrido: 32 caracteres latinos/numéricos + 32 ideogramas chinos estéticos
-    // Sin caracteres duplicados, sin puntos ni comodines finales (padding libre de '.')
-    const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" + 
-                     "龍鳳玄夜月星影幻霧刃雷風雨雪霜空光神鬼龍魂心鏡夢桜海幽炎狼翼劍狐";
+    // Alfabeto estricto de 16 glifos únicos (Base-16 Nibble-Map)
+    // 4 caracteres latinos + 4 números + 4 ideogramas chinos + 4 letras árabes aisladas
+    // 1 byte = exactamente 2 glifos fijos (100% libre de residuos, padding, bits rotos o desincronización)
+    const GLYPHS = [
+      "A", "K", "X", "Z",      // Letras
+      "2", "5", "7", "9",      // Números
+      "龍", "夜", "星", "影",   // Chino
+      "ن", "س", "م", "ك"       // Árabe
+    ];
 
-    const CHAR_MAP = new Map();
-    for (let i = 0; i < ALPHABET.length; i++) {
-      CHAR_MAP.set(ALPHABET[i], i);
-    }
+    // Mapa directo O(1) de descodificación blindado contra caracteres duplicados o mutaciones UTF-16
+    const REVERSE_MAP = new Map();
+    GLYPHS.forEach((glyph, index) => {
+      REVERSE_MAP.set(glyph, index);
+    });
 
-    // Máscara interna para dispersión en bloque
-    const SBOX = [0x5C, 0xA3, 0x1E, 0x7B, 0x92, 0x4D, 0xE8, 0x3F, 0x61, 0x8A, 0x24, 0xD0];
+    // Máscara simétrica fija de difusión por posición
+    const CIPHER_KEY = [0x5B, 0x93, 0xC7, 0x1E, 0x4A, 0x82, 0xF1, 0x36];
 
     function notify(text, isErr = false) {
       const el = document.getElementById("msg");
       el.textContent = text;
       el.className = "toast" + (isErr ? " err" : "");
-      clearTimeout(el.t);
-      el.t = setTimeout(() => {
+      clearTimeout(el.timer);
+      el.timer = setTimeout(() => {
         el.textContent = "";
       }, 3000);
     }
 
-    function utf8ToBytes(str) {
-      return new TextEncoder().encode(str);
-    }
-
-    function bytesToUtf8(bytes) {
-      return new TextDecoder().decode(bytes);
-    }
-
-    // Cifrador dinámico: IV variable + Checksum + Conversión de flujo en múltiplos de 6 bits (sin '.')
-    function encrypt(rawBytes) {
-      if (!rawBytes || rawBytes.length === 0) return "";
-
-      const iv = Math.floor(Math.random() * 256);
-      let checksum = 0x6A;
-      for (let i = 0; i < rawBytes.length; i++) {
-        checksum = (checksum + rawBytes[i]) & 0xFF;
-      }
-
-      // Payload: [IV (1B), Checksum (1B), Datos cifrados...]
-      const payload = new Uint8Array(2 + rawBytes.length);
-      payload[0] = iv;
-      payload[1] = checksum;
-
-      let chain = iv;
-      for (let i = 0; i < rawBytes.length; i++) {
-        const mask = SBOX[i % SBOX.length];
-        const enc = rawBytes[i] ^ mask ^ chain;
-        payload[2 + i] = enc;
-        chain = enc;
-      }
-
-      // Empaquetado binario a Base-64 sin puntos (agrega longitud exacta de bits como metadata en el primer símbolo)
-      let bitBuffer = 0;
-      let bitCount = 0;
+    function encrypt(plainText) {
+      if (!plainText) return "";
+      const bytes = new TextEncoder().encode(plainText);
       let output = "";
 
-      for (let i = 0; i < payload.length; i++) {
-        bitBuffer = (bitBuffer << 8) | payload[i];
-        bitCount += 8;
-        while (bitCount >= 6) {
-          bitCount -= 6;
-          const index = (bitBuffer >> bitCount) & 0x3F;
-          output += ALPHABET[index];
-        }
-      }
+      for (let i = 0; i < bytes.length; i++) {
+        // Cifrado simétrico reversible por byte
+        const mask = CIPHER_KEY[i % CIPHER_KEY.length] ^ ((i * 13) & 0xFF);
+        const encByte = bytes[i] ^ mask;
 
-      // Si sobran bits (0, 2 o 4), codificamos los sobrantes rellenando ceros a la derecha y guardamos cuántos bits sobraron
-      if (bitCount > 0) {
-        const index = (bitBuffer << (6 - bitCount)) & 0x3F;
-        output += ALPHABET[index];
-      }
+        // Separación exacta en 2 nibbles de 4 bits (0 a 15)
+        const highNibble = (encByte >> 4) & 0x0F;
+        const lowNibble = encByte & 0x0F;
 
-      // El último símbolo del alfabeto guardará el residuo de bits (0, 2, o 4) para recuperación exacta sin usar '.'
-      // Codificamos residuo (bitCount/2) -> 0, 1, 2 asignado a un glifo
-      output += ALPHABET[bitCount / 2];
+        output += GLYPHS[highNibble] + GLYPHS[lowNibble];
+      }
 
       return output;
     }
 
-    function decrypt(cipherStr) {
-      const glyphs = Array.from(cipherStr.trim());
-      if (glyphs.length < 4) {
-        throw new Error("Cadena incompleta o inválida.");
+    function decrypt(cipherText) {
+      // Array.from asegura lectura de unidades de código completas Unicode (incluyendo ideogramas)
+      const glyphs = Array.from(cipherText.replace(/\s+/g, ""));
+      if (glyphs.length === 0) return "";
+
+      if (glyphs.length % 2 !== 0) {
+        throw new Error("Longitud impar: código incompleto");
       }
 
-      // Leer el glifo de residuo final
-      const remainderChar = glyphs.pop();
-      const remainderFactor = CHAR_MAP.get(remainderChar);
-      if (remainderFactor === undefined || remainderFactor > 2) {
-        throw new Error("Formato de residuo incorrecto.");
-      }
-      const leftoverBits = remainderFactor * 2;
+      const byteCount = glyphs.length / 2;
+      const resultBytes = new Uint8Array(byteCount);
 
-      let bitBuffer = 0;
-      let bitCount = 0;
-      const bytes = [];
+      for (let i = 0; i < byteCount; i++) {
+        const charHigh = glyphs[i * 2];
+        const charLow = glyphs[i * 2 + 1];
 
-      for (let i = 0; i < glyphs.length; i++) {
-        const val = CHAR_MAP.get(glyphs[i]);
-        if (val === undefined) {
-          throw new Error("Contiene símbolos desconocidos.");
+        const valHigh = REVERSE_MAP.get(charHigh);
+        const valLow = REVERSE_MAP.get(charLow);
+
+        if (valHigh === undefined || valLow === undefined) {
+          throw new Error("Contiene símbolos no válidos en el dialecto");
         }
 
-        const isLastChunk = (i === glyphs.length - 1);
-        if (isLastChunk && leftoverBits > 0) {
-          // Último chunk con bits válidos exactos
-          bitBuffer = (bitBuffer << leftoverBits) | (val >> (6 - leftoverBits));
-          bitCount += leftoverBits;
-        } else {
-          bitBuffer = (bitBuffer << 6) | val;
-          bitCount += 6;
-        }
-
-        while (bitCount >= 8) {
-          bitCount -= 8;
-          bytes.push((bitBuffer >> bitCount) & 0xFF);
-        }
+        const encByte = (valHigh << 4) | valLow;
+        const mask = CIPHER_KEY[i % CIPHER_KEY.length] ^ ((i * 13) & 0xFF);
+        resultBytes[i] = encByte ^ mask;
       }
 
-      if (bytes.length < 2) {
-        throw new Error("Datos insuficientes.");
-      }
-
-      const iv = bytes[0];
-      const checksumExpected = bytes[1];
-      const dataLen = bytes.length - 2;
-      const raw = new Uint8Array(dataLen);
-
-      let chain = iv;
-      let calcChecksum = 0x6A;
-
-      for (let j = 0; j < dataLen; j++) {
-        const enc = bytes[2 + j];
-        const mask = SBOX[j % SBOX.length];
-        const dec = enc ^ mask ^ chain;
-        raw[j] = dec;
-        calcChecksum = (calcChecksum + dec) & 0xFF;
-        chain = enc;
-      }
-
-      if (calcChecksum !== checksumExpected) {
-        throw new Error("Texto alterado o código incorrecto.");
-      }
-
-      return bytesToUtf8(raw);
+      return new TextDecoder().decode(resultBytes);
     }
 
-    // Controladores DOM
+    // Interfaz y eventos
     const inTxt = document.getElementById("inTxt");
     const outTxt = document.getElementById("outTxt");
     const inCount = document.getElementById("inCount");
@@ -352,13 +280,10 @@
     document.getElementById("bEnc").addEventListener("click", () => {
       try {
         const val = inTxt.value;
-        if (!val) {
-          notify("Ingresa texto para cifrar", true);
-          return;
-        }
-        outTxt.value = encrypt(utf8ToBytes(val));
+        if (!val) return notify("Escribe texto para cifrar", true);
+        outTxt.value = encrypt(val);
         syncCounts();
-        notify("Cifrado completado");
+        notify("Cifrado correctamente");
       } catch (e) {
         notify(e.message, true);
       }
@@ -367,13 +292,10 @@
     document.getElementById("bDec").addEventListener("click", () => {
       try {
         const val = inTxt.value;
-        if (!val) {
-          notify("Pega el código en la entrada", true);
-          return;
-        }
+        if (!val) return notify("Pega el texto para descifrar", true);
         outTxt.value = decrypt(val);
         syncCounts();
-        notify("Descifrado exacto sin errores");
+        notify("Descifrado al 100%");
       } catch (e) {
         notify(e.message, true);
       }
@@ -388,11 +310,8 @@
     });
 
     document.getElementById("bCopy").addEventListener("click", () => {
-      if (!outTxt.value) {
-        notify("Nada que copiar", true);
-        return;
-      }
-      navigator.clipboard.writeText(outTxt.value).then(() => notify("Copiado al portapapeles"));
+      if (!outTxt.value) return notify("Nada que copiar", true);
+      navigator.clipboard.writeText(outTxt.value).then(() => notify("Copiado"));
     });
 
     document.getElementById("bClear").addEventListener("click", () => {
